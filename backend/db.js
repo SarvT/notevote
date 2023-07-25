@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const dbURI = "mongodb://localhost:27017";
+const dbURI = "mongodb://localhost:27017/notevote";
 
 const connectDB= ()=> {
     try {
