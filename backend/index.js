@@ -8,11 +8,11 @@ connectDB();
 
 const app = express()
 app.use(express.json())
-const port = 3000
+const port = 5000
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/notes', require('./routes/notes'))
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  return "";
 })
 
 app.listen(port, () => {

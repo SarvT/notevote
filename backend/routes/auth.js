@@ -3,6 +3,7 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../models/User");
+const profile = require("../middleware/profile");
 const { body, validationResult } = require("express-validator");
 
 const JWT_SECRET = "dsjshbkagigaicaxkdgi";
@@ -61,10 +62,7 @@ router.post(
 
 router.post(
   "/login",
-  [
-    body("email").isEmail(),
-    body("password").isLength({ min: 5 }),
-  ],
+  [body("email").isEmail(), body("password").isLength({ min: 5 })],
   async (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
@@ -95,5 +93,17 @@ router.post(
     }
   }
 );
+
+router.post("/user", profile, async (req, res) => {
+  try {
+    userId = req.user.id;
+    const user = await User.findById(userId).select("-password");
+    res.send(user);
+  } catch (error) {
+    res
+      .status(500)
+      .send("Something went wrong! Please check your inputs and try again.");
+  }
+});
 
 module.exports = router;
