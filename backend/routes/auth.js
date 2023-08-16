@@ -17,13 +17,16 @@ router.post(
   ],
   async (req, res) => {
     const result = validationResult(req);
+    let success = false;
     if (!result.isEmpty()) {
-      return res.status(400).json({ errors: result.array() });
+      return res.status(400).json({ success, errors: result.array() });
     }
     try {
       let user = await User.findOne({ email: req.body.email });
       if (user) {
+        success=false;
         return res.status(405).json({
+          success,
           error: "Already signed up, Try logging in.",
         });
       }
@@ -43,7 +46,8 @@ router.post(
       // res.send(user);
       const jwt_data = jwt.sign(data, JWT_SECRET);
       console.log(jwt_data);
-      res.json({ jwt_data });
+      success=true
+      res.json({ success, jwt_data });
     } catch (error) {
       // .then((user) => res.json(user))
       // .catch(err=>{
@@ -64,6 +68,7 @@ router.post(
   "/login",
   [body("email").isEmail(), body("password").isLength({ min: 5 })],
   async (req, res) => {
+    let success = false;
     const result = validationResult(req);
     if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() });
@@ -73,11 +78,13 @@ router.post(
     try {
       let user = await User.findOne({ email: email });
       if (!user) {
-        throw Error("Invalid credintials!");
+        return res.status(400).json({success, error:"Invalid credintials!"});
       }
       const isPassValid = await bcryptjs.compare(password, user.password);
       if (!isPassValid) {
-        throw Error("Invalid credintials!");
+        success = false;
+        return res.status(400).json({success, error:"Invalid credintials!"});
+        // throw Error({success, "Invalid credintials!"});
       }
       // payload
       const data = {
@@ -86,10 +93,11 @@ router.post(
         },
       };
       const jwt_data = await jwt.sign(data, JWT_SECRET);
-      res.send({ jwt_data });
+      success = true
+      res.send({ success, jwt_data });
     } catch (error) {
       console.error(error.message);
-      res.status(500).send("Somme error occured, please try again!");
+      res.status(500).send(success, "Somme error occured, please try again!");
     }
   }
 );
